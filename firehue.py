@@ -7,7 +7,6 @@ import RPi.GPIO as GPIO
 
 bridge_ip='Philips-hue.teapot'
 cooldownTime = 5 * 60
-refreshTime = 1
 gpioPin = 17
 
 
@@ -32,7 +31,7 @@ def reset(bridge):
 def main():
     bridge = Bridge(bridge_ip)
     if args.connect is True:
-        connect()
+        connect(bridge)
     else:
         try:
             bridge.connect()
@@ -47,13 +46,10 @@ def main():
     print('Setup GPIO, ready to receive signal...')
     try:
         while True:
-            button_state = GPIO.input(gpioPin)
-            if not button_state:
-                alarm(bridge)
-                time.sleep(cooldownTime)
-                reset(bridge)
-            else:
-                time.sleep(refreshTime)
+            GPIO.wait_for_edge(gpioPin, GPIO.FALLING)
+            alarm(bridge)
+            time.sleep(cooldownTime)
+            reset(bridge)
     finally:
         GPIO.cleanup()
 
