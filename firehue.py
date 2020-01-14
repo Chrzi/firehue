@@ -5,9 +5,10 @@ import argparse
 import time
 import RPi.GPIO as GPIO
 
-bridge_ip='Philips-hue.teapot'
+bridge_ip = ''
 cooldownTime = 5 * 60
 gpioPin = 17
+debounceTime = 0.5
 
 
 def connect(bridge):
@@ -17,9 +18,15 @@ def connect(bridge):
 
 def alarm(bridge):
     print("Alarm, turning lamps on")
-    for light in bridge.lights:
-        light.on = True
-        light.brightness = 254
+    rooms = ['Bedroom', 'Living room', 'Hallway']
+    for room in rooms:
+        bridge.run_scene(room, 'Bright', transition_time=1)
+
+    for room in rooms:
+        bridge.run_scene(room, 'Red', transition_time=1)
+
+    for room in rooms:
+        bridge.run_scene(room, 'Bright', transition_time=1)
 
 
 def reset(bridge):
@@ -38,7 +45,7 @@ def main():
         except Exception:
             print("Failed to connect to bridge, please use --connect for first setup")
             exit(1)
-    
+
     print('Connection to bridge successful!')
 
     GPIO.setmode(GPIO.BCM)
@@ -47,6 +54,9 @@ def main():
     try:
         while True:
             GPIO.wait_for_edge(gpioPin, GPIO.FALLING)
+            sleep(debounceTime)
+            if GPIO.input(gpioPin) == GPIO.HIGH:
+                continue
             alarm(bridge)
             time.sleep(cooldownTime)
             reset(bridge)
@@ -57,7 +67,6 @@ def main():
 parser = argparse.ArgumentParser(description="An awesome python script to control my Hue lamps to THE MAX!")
 parser.add_argument('-c', '--connect', action='store_true', default=False, help="First time connect to bridge")
 args = parser.parse_args()
-
 
 if __name__ == '__main__':
     main()
