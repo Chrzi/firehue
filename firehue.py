@@ -2,7 +2,7 @@
 
 from phue import Bridge
 import argparse
-import time
+from time import sleep
 import RPi.GPIO as GPIO
 
 bridge_ip = ''
@@ -21,7 +21,7 @@ def alarm(bridge):
     rooms = ['Bedroom', 'Living room', 'Hallway']
     for room in rooms:
         bridge.run_scene(room, 'Bright', transition_time=1)
-
+    
     for room in rooms:
         bridge.run_scene(room, 'Red', transition_time=1)
 
